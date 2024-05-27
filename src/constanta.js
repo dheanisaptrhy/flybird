@@ -1,0 +1,14 @@
+export const ASPECT_RATIO = {
+    WIDTH: 9,
+    HEIGHT: 16
+}
+
+export const DISPLAY_PIXEL = {
+    WIDTH: 50,
+    HEIGHT: 50
+}
+
+export const DISPLAY = {
+    WIDTH: ASPECT_RATIO.WIDTH * DISPLAY_PIXEL.WIDTH,
+    HEIGHT: ASPECT_RATIO.HEIGHT * DISPLAY_PIXEL.HEIGHT
+}
