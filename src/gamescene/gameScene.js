@@ -25,7 +25,10 @@ export default class GameScene extends Phaser.Scene {
     preload() {
         // images
         this.load.image('background', '/assets/sprites/background-day.png')
-        this.load.image('player', '/assets/sprites/bluebird-midflap.png')
+        this.load.spritesheet('player', '/assets/sprites/spritesheet.png',{
+            frameWidth:34,
+            frameHeight: 24
+        })
         this.load.image('pipe', '/assets/sprites/pipe-green.png')
         this.load.image('ground', '/assets/sprites/base.png')
 
@@ -47,22 +50,30 @@ export default class GameScene extends Phaser.Scene {
         this.background.on('pointerdown', this.startGame, this)
 
         // ground
-        this.ground = this.add.tileSprite(0, height - 50, width, 100, 'ground').setOrigin(0, 0)
+        this.ground = this.add.tileSprite(0, height -70, width, 100, 'ground').setOrigin(0, 0)
+        this.ground.setDepth(1)
+        this.physics.add.existing(this.ground, true) //agar ground bisa diinteraksi dg sprites lain
 
         // player
+        this.anims.create({
+            key:"player_anims",
+            frames: this.anims.generateFrameNumbers("player"),
+            frameRate:20,
+            repeat: -1
+        })
         this.player = this.physics.add.sprite(50, height / 2, 'player').setScale(1.2)
         this.player.body.allowGravity = false; //dibuat ga jatuh pas pertama kali
         this.player.setInteractive()
         this.player.setCollideWorldBounds(true);
+        this.player.setDepth(1)
 
         // Pipe
         this.pipeGroup = this.physics.add.group({
             immovable: true,
             allowGravity: false
         })
-        this.physics.add.collider(
-            this.player, this.pipeGroup, this.onCollde, null, this
-        )
+        this.physics.add.collider(this.player, this.pipeGroup, this.onCollde, null, this)
+        this.physics.add.collider(this.player, this.ground, this.onCollde, null, this)
 
         // adding sound
         this.birdFly = this.sound.add("wing")
@@ -113,6 +124,7 @@ export default class GameScene extends Phaser.Scene {
                 callbackScope: this,
                 loop: true
             })
+            this.player.play("player_anims")
         }
     }
 
@@ -131,6 +143,7 @@ export default class GameScene extends Phaser.Scene {
         topPipe.setRotation(Phaser.Math.DegToRad(180))
         topPipe.checkWorldBounds = true
         topPipe.outOfBoundsKill = true
+        
         const bottomPipe = this.physics.add.sprite(width, height + offset + PIPE_GATE - 5, 'pipe').setScale(1.5)
         bottomPipe.name = PIPE_ID
         bottomPipe.checkWorldBounds = true
@@ -146,6 +159,7 @@ export default class GameScene extends Phaser.Scene {
 
     gameOver() {
         this.birdFall.play()
+        this.player.stop()
         this.background.disableInteractive()
         this.gameover = true
         this.pipeGroup.destroy()
